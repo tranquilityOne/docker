@@ -1,0 +1,21 @@
+FROM mcr.microsoft.com/dotnet/sdk:3.1 as publish 
+WORKDIR /src
+COPY /src .
+RUN dotnet publish "xxx.Host.csproj" -c Release -o /app
+
+FROM mcr.microsoft.com/dotnet/runtime:3.1
+WORKDIR /app
+COPY --from=publish /app .
+ENTRYPOINT ["dotnet", "xx.Host.dll"]
+
+ARG BUILD_DATE
+ARG VCS_REF
+ARG BUILD_VERSION
+LABEL org.label-schema.schema-version="1.0"
+LABEL org.label-schema.build-date=$BUILD_DATE
+LABEL org.label-schema.name="project name"
+LABEL org.label-schema.description="a project"
+LABEL org.label-schema.vendor="hi"
+LABEL org.label-schema.vcs-ref=$VCS_REF
+LABEL org.label-schema.version=$BUILD_VERSION
+LABEL org.label-schema.vcs-url=https://xx.git

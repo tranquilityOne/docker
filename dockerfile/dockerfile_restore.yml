@@ -1,0 +1,30 @@
+FROM mcr.microsoft.com/dotnet/sdk:3.1 AS base
+WORKDIR /app
+
+FROM mcr.microsoft.com/dotnet/sdk:3.1 as restore     #restore
+WORKDIR /src
+COPY src/*/*.csproj ./    #copy fie
+RUN for file in $(ls *.csproj); do mkdir -p ${file%.*}/ && mv $file ${file%.*}/; done     
+RUN dotnet restore "xxx.Host.csproj"
+
+FROM restore as publish   #publish
+COPY .src .
+RUN dotnet publish "Jxxx.Host.csproj" -c Release -o /app/publish --no-restore
+
+FROM base AS final #run
+WORKDIR /app
+COPY --from=publish /app/publish .
+HEALTHCHECK --interval=45s --timeout=3s CMD curl --fail --silent http://localhost/health || exit 1
+ENTRYPOINT ["dotnet", "xxx.Host.dll"]
+
+ARG BUILD_DATE
+ARG VCS_REF
+ARG BUILD_VERSION
+LABEL org.label-schema.schema-version="1.0"
+LABEL org.label-schema.build-date=$BUILD_DATE
+LABEL org.label-schema.name="project name"
+LABEL org.label-schema.description="a project"
+LABEL org.label-schema.vendor="hi"
+LABEL org.label-schema.vcs-ref=$VCS_REF
+LABEL org.label-schema.version=$BUILD_VERSION
+LABEL org.label-schema.vcs-url=https://xx.git
